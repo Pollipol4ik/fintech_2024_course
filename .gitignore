@@ -4,6 +4,14 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Лог-файлы
+*.log
+
+# Кэшированные файлы
+*.cache
+*.bak
+*.swp
+
 ### STS ###
 .apt_generated
 .classpath
