@@ -80,8 +80,6 @@ public class CustomLinkedList<T> {
         }
     }
 
-    ;
-
 
     public void remove(int index) {
         if (index < 0 || index >= size) {
