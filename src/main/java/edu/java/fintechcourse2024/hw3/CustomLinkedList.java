@@ -3,7 +3,7 @@ package edu.java.fintechcourse2024.hw3;
 import java.util.List;
 
 public class CustomLinkedList<T> {
-    private Node<T> first, last; // Ссылки на первый и последний узлы
+    private Node<T> first, last;
     private int size;
 
     public CustomLinkedList() {
@@ -15,7 +15,6 @@ public class CustomLinkedList<T> {
         return size;
     }
 
-    // Добавить элемент в конец списка
     public void add(T item) {
         if (!isEmpty()) {
             Node<T> prev = last;
@@ -28,7 +27,7 @@ public class CustomLinkedList<T> {
         size++;
     }
 
-    // Получить элемент по индексу
+
     public T get(int index) {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException("Индекс выходит за пределы списка");
@@ -57,7 +56,7 @@ public class CustomLinkedList<T> {
         size++;
     }
 
-    //Вставка элемента.
+
     public void insert(T item, int location) {
         if (size <= location) {
             System.out.println("location > size");
@@ -79,9 +78,11 @@ public class CustomLinkedList<T> {
                 now = now.next;
             }
         }
-    };
+    }
 
-    // Удалить элемент по индексу
+    ;
+
+
     public void remove(int index) {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException("Индекс выходит за пределы списка");
@@ -102,7 +103,7 @@ public class CustomLinkedList<T> {
         size--;
     }
 
-    // Проверить, содержит ли список элемент
+
     public boolean contains(T item) {
         Node<T> current = first;
         while (current != null) {
@@ -114,19 +115,17 @@ public class CustomLinkedList<T> {
         return false;
     }
 
-    // Добавить все элементы из другого списка
     public void addAll(List<T> items) {
         for (T item : items) {
             add(item);
         }
     }
 
-    // Проверить, пуст ли список
+
     public boolean isEmpty() {
         return size == 0;
     }
 
-    // Вывести все элементы списка (для тестирования)
     public void printList() {
         Node<T> current = first;
         while (current != null) {
