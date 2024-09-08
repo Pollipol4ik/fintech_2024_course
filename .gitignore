@@ -41,3 +41,7 @@ build/
 .vscode/
 
 
+### Gradle ###
+.gradle
+
+
