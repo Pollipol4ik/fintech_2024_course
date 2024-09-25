@@ -12,26 +12,24 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
-
 @RestController
 @RequestMapping("/api/v1/places/categories")
 @RequiredArgsConstructor
 @LogExecutionTime
 public class CategoryController {
 
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
 
-
-    @Operation(summary = "Get all categories", description = "Получить список всех категорий мест")
+    @Operation(summary = "Get all categories")
     @GetMapping
     public Iterable<Category> getAllCategories() {
         return categoryService.getAllCategories();
     }
 
-    @Operation(summary = "Get category by ID", description = "Получить категорию по её идентификатору (ID)")
+    @Operation(summary = "Get category by ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Категория найдена"),
-            @ApiResponse(responseCode = "404", description = "Категория не найдена")
+            @ApiResponse(responseCode = "200", description = "Category found"),
+            @ApiResponse(responseCode = "404", description = "Category not found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<Category> getCategoryById(@PathVariable Integer id) {
@@ -39,26 +37,26 @@ public class CategoryController {
         return category.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Create category", description = "Создать новую категорию")
+    @Operation(summary = "Create category")
     @PostMapping
     public Category createCategory(@RequestBody Category category) {
         return categoryService.createCategory(category);
     }
 
-    @Operation(summary = "Update category by ID", description = "Обновить категорию по её идентификатору (ID)")
+    @Operation(summary = "Update category by ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Категория обновлена"),
-            @ApiResponse(responseCode = "404", description = "Категория не найдена")
+            @ApiResponse(responseCode = "200", description = "Category updated"),
+            @ApiResponse(responseCode = "404", description = "Category not found")
     })
     @PutMapping("/{id}")
     public ResponseEntity<Category> updateCategory(@PathVariable Integer id, @RequestBody Category category) {
         return ResponseEntity.ok(categoryService.updateCategory(id, category));
     }
 
-    @Operation(summary = "Delete category by ID", description = "Удалить категорию по её идентификатору (ID)")
+    @Operation(summary = "Delete category by ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Категория удалена"),
-            @ApiResponse(responseCode = "404", description = "Категория не найдена")
+            @ApiResponse(responseCode = "204", description = "Category deleted"),
+            @ApiResponse(responseCode = "404", description = "Category not found")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Integer id) {

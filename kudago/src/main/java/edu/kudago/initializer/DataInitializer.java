@@ -46,7 +46,7 @@ public class DataInitializer implements CommandLineRunner {
                 .uri("/place-categories/")
                 .retrieve()
                 .bodyToMono(Category[].class)
-                .block();  // Для простоты используется блокировка
+                .block();
 
         if (categories != null) {
             for (Category category : categories) {
