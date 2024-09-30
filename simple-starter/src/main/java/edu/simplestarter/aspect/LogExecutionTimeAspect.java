@@ -1,4 +1,4 @@
-package edu.kudago.aspect;
+package edu.simplestarter.aspect;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -13,7 +13,7 @@ public class LogExecutionTimeAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(LogExecutionTimeAspect.class);
 
-    @Around("@annotation(LogExecutionTime) || @within(LogExecutionTime)")
+    @Around("@annotation(edu.simplestarter.aspect.LogExecutionTime) || @within(edu.simplestarter.aspect.LogExecutionTime)")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         long start = System.currentTimeMillis();
         Object proceed = joinPoint.proceed();

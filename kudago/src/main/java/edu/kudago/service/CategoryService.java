@@ -1,9 +1,9 @@
 package edu.kudago.service;
 
 import edu.kudago.dto.Category;
+import edu.kudago.exceptions.ResourceNotFoundException;
 import edu.kudago.storage.InMemoryStorage;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
 
 @Service
 public class CategoryService {
@@ -13,8 +13,9 @@ public class CategoryService {
         return storage.findAll();
     }
 
-    public Optional<Category> getCategoryById(Integer id) {
-        return storage.findById(id);
+    public Category getCategoryById(Integer id) {
+        return storage.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
     }
 
     public Category createCategory(Category category) {
@@ -22,10 +23,16 @@ public class CategoryService {
     }
 
     public Category updateCategory(Integer id, Category category) {
+        if (!storage.existsById(id)) {
+            throw new ResourceNotFoundException("Category not found with id: " + id);
+        }
         return storage.save(id, category);
     }
 
     public void deleteCategory(Integer id) {
+        if (!storage.existsById(id)) {
+            throw new ResourceNotFoundException("Category not found with id: " + id);
+        }
         storage.deleteById(id);
     }
 }

@@ -1,4 +1,4 @@
-package edu.kudago.aspect;
+package edu.simplestarter.aspect;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,9 +1,9 @@
 package edu.kudago.service;
 
 import edu.kudago.dto.Location;
+import edu.kudago.exceptions.ResourceNotFoundException;
 import edu.kudago.storage.InMemoryStorage;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
 
 @Service
 public class LocationService {
@@ -13,8 +13,9 @@ public class LocationService {
         return storage.findAll();
     }
 
-    public Optional<Location> getLocationBySlug(String slug) {
-        return storage.findById(slug);
+    public Location getLocationBySlug(String slug) {
+        return storage.findById(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Location not found with slug: " + slug));
     }
 
     public Location createLocation(Location location) {
@@ -22,10 +23,16 @@ public class LocationService {
     }
 
     public Location updateLocation(String slug, Location location) {
+        if (!storage.existsById(slug)) {
+            throw new ResourceNotFoundException("Location not found with slug: " + slug);
+        }
         return storage.save(slug, location);
     }
 
     public void deleteLocation(String slug) {
+        if (!storage.existsById(slug)) {
+            throw new ResourceNotFoundException("Location not found with slug: " + slug);
+        }
         storage.deleteById(slug);
     }
 }

@@ -1,8 +1,8 @@
 package edu.kudago.storage;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryStorage<T, ID> {
     private final Map<ID, T> storage = new ConcurrentHashMap<>();
@@ -22,5 +22,9 @@ public class InMemoryStorage<T, ID> {
 
     public void deleteById(ID id) {
         storage.remove(id);
+    }
+
+    public boolean existsById(ID id) {
+        return storage.containsKey(id);
     }
 }

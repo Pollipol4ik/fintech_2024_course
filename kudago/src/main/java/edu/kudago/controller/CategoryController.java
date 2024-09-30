@@ -1,17 +1,15 @@
 package edu.kudago.controller;
 
-import edu.kudago.aspect.LogExecutionTime;
 import edu.kudago.dto.Category;
 import edu.kudago.service.CategoryService;
+
+import edu.simplestarter.aspect.LogExecutionTime;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/places/categories")
@@ -29,13 +27,11 @@ public class CategoryController {
 
     @Operation(summary = "Get category by ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Category found"),
-            @ApiResponse(responseCode = "404", description = "Category not found")
+            @ApiResponse(responseCode = "200", description = "Category found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<Category> getCategoryById(@PathVariable Integer id) {
-        Optional<Category> category = categoryService.getCategoryById(id);
-        return category.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 
     @Operation(summary = "Create category")
@@ -46,8 +42,7 @@ public class CategoryController {
 
     @Operation(summary = "Update category by ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Category updated"),
-            @ApiResponse(responseCode = "404", description = "Category not found")
+            @ApiResponse(responseCode = "200", description = "Category updated")
     })
     @PutMapping("/{id}")
     public ResponseEntity<Category> updateCategory(@PathVariable Integer id, @RequestBody Category category) {
@@ -56,8 +51,7 @@ public class CategoryController {
 
     @Operation(summary = "Delete category by ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Category deleted"),
-            @ApiResponse(responseCode = "404", description = "Category not found")
+            @ApiResponse(responseCode = "204", description = "Category deleted")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Integer id) {

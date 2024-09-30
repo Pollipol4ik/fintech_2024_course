@@ -1,17 +1,15 @@
 package edu.kudago.controller;
 
-import edu.kudago.aspect.LogExecutionTime;
 import edu.kudago.dto.Location;
 import edu.kudago.service.LocationService;
+
+import edu.simplestarter.aspect.LogExecutionTime;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/locations")
@@ -29,13 +27,11 @@ public class LocationController {
 
     @Operation(summary = "Get location by slug")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Location found"),
-            @ApiResponse(responseCode = "404", description = "Location not found")
+            @ApiResponse(responseCode = "200", description = "Location found")
     })
     @GetMapping("/{slug}")
     public ResponseEntity<Location> getLocationBySlug(@PathVariable String slug) {
-        Optional<Location> location = locationService.getLocationBySlug(slug);
-        return location.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(locationService.getLocationBySlug(slug));
     }
 
     @Operation(summary = "Create location")
@@ -46,8 +42,7 @@ public class LocationController {
 
     @Operation(summary = "Update location by slug")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Location updated"),
-            @ApiResponse(responseCode = "404", description = "Location not found")
+            @ApiResponse(responseCode = "200", description = "Location updated")
     })
     @PutMapping("/{slug}")
     public ResponseEntity<Location> updateLocation(@PathVariable String slug, @RequestBody Location location) {
@@ -56,8 +51,7 @@ public class LocationController {
 
     @Operation(summary = "Delete location by slug")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Location deleted"),
-            @ApiResponse(responseCode = "404", description = "Location not found")
+            @ApiResponse(responseCode = "204", description = "Location deleted")
     })
     @DeleteMapping("/{slug}")
     public ResponseEntity<Void> deleteLocation(@PathVariable String slug) {
