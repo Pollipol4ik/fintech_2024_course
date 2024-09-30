@@ -5,3 +5,6 @@
  */
 
 rootProject.name = 'FintechCourse2024'
+include ':kudago'
+include ':simple-starter'
+
