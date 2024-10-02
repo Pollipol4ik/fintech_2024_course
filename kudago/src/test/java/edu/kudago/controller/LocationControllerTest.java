@@ -2,8 +2,8 @@ package edu.kudago.controller;
 
 import com.redis.testcontainers.RedisContainer;
 import edu.kudago.dto.Location;
-import edu.kudago.service.LocationService;
 import edu.kudago.exceptions.ResourceNotFoundException;
+import edu.kudago.service.LocationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,8 +24,13 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -80,11 +85,11 @@ public class LocationControllerTest {
     @Test
     @DisplayName("Get location by non-existent ID - failure")
     public void testGetLocationBySlugNotFound() throws Exception {
-        Mockito.when(locationService.getLocationBySlug("unknown")).thenThrow(new ResourceNotFoundException("Location not found"));
+        Mockito.when(locationService.getLocationBySlug("unknown")).thenThrow(new ResourceNotFoundException("Location not found with slug: unknown"));
 
         mockMvc.perform(get("/api/v1/locations/{slug}", "unknown"))
                 .andExpect(status().isNotFound())
-                .andExpect(content().json("{\"success\":false,\"message\":\"Location not found\"}"));
+                .andExpect(content().json("{\"success\":false,\"message\":\"Location not found with slug: unknown\"}"));
     }
 
     @Test
@@ -115,13 +120,13 @@ public class LocationControllerTest {
     @DisplayName("Update non-existent location - failure")
     public void testUpdateLocationNotFound() throws Exception {
         Mockito.when(locationService.updateLocation(eq("unknown"), any(Location.class)))
-                .thenThrow(new ResourceNotFoundException("Location not found"));
+                .thenThrow(new ResourceNotFoundException("Location not found with slug: unknown"));
 
         mockMvc.perform(put("/api/v1/locations/{slug}", "unknown")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"slug\":\"unknown\",\"name\":\"Unknown\"}"))
                 .andExpect(status().isNotFound())
-                .andExpect(content().json("{\"success\":false,\"message\":\"Location not found\"}"));
+                .andExpect(content().json("{\"success\":false,\"message\":\"Location not found with slug: unknown\"}"));
     }
 
     @Test
@@ -136,10 +141,10 @@ public class LocationControllerTest {
     @Test
     @DisplayName("Delete non-existent location - failure")
     public void testDeleteLocationNotFound() throws Exception {
-        Mockito.doThrow(new ResourceNotFoundException("Location not found")).when(locationService).deleteLocation("unknown");
+        Mockito.doThrow(new ResourceNotFoundException("Location not found with slug: unknown")).when(locationService).deleteLocation("unknown");
 
         mockMvc.perform(delete("/api/v1/locations/{slug}", "unknown"))
                 .andExpect(status().isNotFound())
-                .andExpect(content().json("{\"success\":false,\"message\":\"Location not found\"}"));
+                .andExpect(content().json("{\"success\":false,\"message\":\"Location not found with slug: unknown\"}"));
     }
 }

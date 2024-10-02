@@ -24,7 +24,10 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -84,11 +87,11 @@ public class CategoryControllerTest {
     @Test
     @DisplayName("Get category by non-existent ID - failure")
     public void testGetCategoryByIdNotFound() throws Exception {
-        Mockito.when(categoryService.getCategoryById(999)).thenThrow(new ResourceNotFoundException("Category not found"));
+        Mockito.when(categoryService.getCategoryById(999)).thenThrow(new ResourceNotFoundException("Category not found with id: 999"));
 
         mockMvc.perform(get("/api/v1/places/categories/{id}", 999))
                 .andExpect(status().isNotFound())
-                .andExpect(content().json("{\"success\":false,\"message\":\"Category not found\"}"));
+                .andExpect(content().json("{\"success\":false,\"message\":\"Category not found with id: 999\"}"));
     }
 
 
@@ -122,13 +125,13 @@ public class CategoryControllerTest {
     @DisplayName("Update non-existent category - failure")
     public void testUpdateCategoryNotFound() throws Exception {
         Mockito.when(categoryService.updateCategory(eq(999), any(Category.class)))
-                .thenThrow(new ResourceNotFoundException("Category not found"));
+                .thenThrow(new ResourceNotFoundException("Category not found with id: 999"));
 
         mockMvc.perform(put("/api/v1/places/categories/{id}", 999)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"slug\":\"unknown\",\"name\":\"Unknown\"}"))
                 .andExpect(status().isNotFound())
-                .andExpect(content().json("{\"success\":false,\"message\":\"Category not found\"}"));
+                .andExpect(content().json("{\"success\":false,\"message\":\"Category not found with id: 999\"}"));
     }
 
 
@@ -145,10 +148,10 @@ public class CategoryControllerTest {
     @Test
     @DisplayName("Delete non-existent category - failure")
     public void testDeleteCategoryNotFound() throws Exception {
-        Mockito.doThrow(new ResourceNotFoundException("Category not found")).when(categoryService).deleteCategory(999);
+        Mockito.doThrow(new ResourceNotFoundException("Category not found with id: 999")).when(categoryService).deleteCategory(999);
 
         mockMvc.perform(delete("/api/v1/places/categories/{id}", 999))
                 .andExpect(status().isNotFound())
-                .andExpect(content().json("{\"success\":false,\"message\":\"Category not found\"}"));
+                .andExpect(content().json("{\"success\":false,\"message\":\"Category not found with id: 999\"}"));
     }
 }
