@@ -3,11 +3,13 @@ package edu.kudago.service;
 import edu.kudago.dto.Location;
 import edu.kudago.exceptions.ResourceNotFoundException;
 import edu.kudago.storage.InMemoryStorage;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class LocationService {
-    private final InMemoryStorage<Location, String> storage = new InMemoryStorage<>();
+    private final InMemoryStorage<Location, String> storage ;
 
     public Iterable<Location> getAllLocations() {
         return storage.findAll();

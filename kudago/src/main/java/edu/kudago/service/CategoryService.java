@@ -3,11 +3,15 @@ package edu.kudago.service;
 import edu.kudago.dto.Category;
 import edu.kudago.exceptions.ResourceNotFoundException;
 import edu.kudago.storage.InMemoryStorage;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class CategoryService {
-    private final InMemoryStorage<Category, Integer> storage = new InMemoryStorage<>();
+
+    private final InMemoryStorage<Category, Integer> storage;
+
 
     public Iterable<Category> getAllCategories() {
         return storage.findAll();
