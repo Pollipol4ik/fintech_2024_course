@@ -20,7 +20,7 @@ public class CacheConfig {
         return new ConcurrentMapCacheManager("dailyRates");
     }
 
-    @Scheduled(fixedRateString = "${currency-app.cache-eviction-interval}")
+    @Scheduled(fixedRateString = "${app.cache-eviction-interval}")
     public void evictAllCachesAtIntervals() {
         Objects.requireNonNull(cacheManager().getCache("dailyRates")).clear();
     }

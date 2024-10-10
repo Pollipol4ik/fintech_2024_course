@@ -11,7 +11,7 @@ import org.springframework.web.client.RestClient;
 @EnableCaching
 public class CurrencyConfig {
 
-    @Value("${currency-app.bank-api-url}")
+    @Value("${app.bank-api-url}")
     private String bankApiUrl;
 
     @Bean
