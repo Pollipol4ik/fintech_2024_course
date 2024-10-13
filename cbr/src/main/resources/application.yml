@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: cbr
+  cache:
+    caffeine:
+      spec: expireAfterAccess=3600s
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+
+server:
+  servlet:
+    encoding:
+      force-request: true
+      force-response: true
+      charset: UTF-8
+
+app:
+  bank-api-url: https://www.cbr.ru/scripts
+  url-daily: /XML_daily.asp/
+
+# Resilience4j configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      cbrClient:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        failureRateThreshold: 80
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+
+
