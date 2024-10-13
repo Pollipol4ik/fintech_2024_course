@@ -9,9 +9,9 @@ import edu.cbr.exceptions.CurrencyDoesntExistException;
 import edu.cbr.exceptions.CurrencyNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -21,7 +21,6 @@ public class CurrencyService {
 
     private final CbrClient cbrClient;
 
-    @Cacheable(value = "dailyRates")
     public List<Valute> getCachedDailyRates() {
         return cbrClient.getDailyRates();
     }
@@ -40,7 +39,9 @@ public class CurrencyService {
         List<Valute> rates = getCachedDailyRates();
         double fromRate = getRate(request.fromCurrency(), rates);
         double toRate = getRate(request.toCurrency(), rates);
-        double convertedAmount = request.amount() * (fromRate / toRate);
+
+        BigDecimal convertedAmount = request.amount()
+                .multiply(BigDecimal.valueOf(fromRate / toRate));
 
         log.debug("From currency with rate: {} and code: {}", fromRate, request.fromCurrency());
         log.debug("To currency with rate: {} and code: {}", toRate, request.toCurrency());
@@ -48,6 +49,7 @@ public class CurrencyService {
 
         return new ConvertResponse(request.fromCurrency(), request.toCurrency(), convertedAmount);
     }
+
 
     private double getRate(String currencyCode, List<Valute> rates) {
         if ("RUB".equalsIgnoreCase(currencyCode)) {

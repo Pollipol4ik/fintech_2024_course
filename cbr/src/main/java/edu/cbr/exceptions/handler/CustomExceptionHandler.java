@@ -1,6 +1,6 @@
 package edu.cbr.exceptions.handler;
 
-import edu.cbr.dto.SuccessResponseDto;
+import edu.cbr.dto.ExceptionResponseDto;
 import edu.cbr.exceptions.BaseException;
 import edu.cbr.exceptions.CurrencyServiceUnavailableException;
 import org.springframework.http.HttpHeaders;
@@ -19,23 +19,23 @@ import java.util.Map;
 public class CustomExceptionHandler {
 
     @ExceptionHandler(BaseException.class)
-    public ResponseEntity<SuccessResponseDto> baseExceptionHandler(BaseException ex) {
+    public ResponseEntity<ExceptionResponseDto> baseExceptionHandler(BaseException ex) {
         return ResponseEntity
                 .status(ex.getHttpStatus())
-                .body(new SuccessResponseDto(false, ex.getMessage()));
+                .body(new ExceptionResponseDto(false, ex.getMessage()));
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public SuccessResponseDto methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException ex) {
+    public ExceptionResponseDto methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException ex) {
         var fieldError = ex.getBindingResult().getFieldError();
         if (fieldError == null) {
-            return new SuccessResponseDto(
+            return new ExceptionResponseDto(
                     false,
                     ex.getStatusCode() + ": " + ex.getBody().getDetail()
             );
         }
-        return new SuccessResponseDto(
+        return new ExceptionResponseDto(
                 false,
                 ex.getStatusCode() + ": " + fieldError.getField() + " - " + fieldError.getDefaultMessage()
         );
@@ -43,15 +43,15 @@ public class CustomExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(HandlerMethodValidationException.class)
-    public SuccessResponseDto handlerMethodValidationException(HandlerMethodValidationException ex) {
+    public ExceptionResponseDto handlerMethodValidationException(HandlerMethodValidationException ex) {
         var detailMessageArguments = ex.getDetailMessageArguments();
         if (detailMessageArguments == null || detailMessageArguments.length == 0) {
-            return new SuccessResponseDto(
+            return new ExceptionResponseDto(
                     false,
                     ex.getMessage()
             );
         }
-        return new SuccessResponseDto(
+        return new ExceptionResponseDto(
                 false,
                 ex.getStatusCode() + ": " + detailMessageArguments[0]
         );

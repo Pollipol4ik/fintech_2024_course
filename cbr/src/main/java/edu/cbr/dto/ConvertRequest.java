@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+import java.math.BigDecimal;
+
 public record ConvertRequest(
         @Schema(description = "The currency code from which the conversion is made", example = "USD")
         @Size(min = 3, max = 3, message = "The currency code must contain exactly 3 characters")
@@ -17,6 +19,6 @@ public record ConvertRequest(
         String toCurrency,
 
         @Positive(message = "The amount for conversion must be a positive number")
-        double amount
+        BigDecimal amount
 ) {
 }

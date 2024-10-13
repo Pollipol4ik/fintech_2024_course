@@ -1,27 +1,24 @@
 package edu.cbr.configuration;
 
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
-
-import java.util.Objects;
 
 @Configuration
 @EnableCaching
-@EnableScheduling
 public class CacheConfig {
+
+    @Value("${spring.cache.caffeine.spec}")
+    private String caffeineSpec;
 
     @Bean
     public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("dailyRates");
-    }
-
-    @Scheduled(fixedRateString = "${app.cache-eviction-interval}")
-    public void evictAllCachesAtIntervals() {
-        Objects.requireNonNull(cacheManager().getCache("dailyRates")).clear();
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager("dailyRates");
+        cacheManager.setCaffeineSpec(CaffeineSpec.parse(caffeineSpec));
+        return cacheManager;
     }
 }

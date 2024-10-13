@@ -5,6 +5,8 @@ import edu.cbr.entity.Valute;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpServerErrorException;
@@ -18,15 +20,18 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class CbrClient {
+    @Value("${app.url-daily}")
+    private String urlDaily;
 
     private final RestClient restClient;
 
     @CircuitBreaker(name = "cbrClient", fallbackMethod = "fallbackDailyRates")
+    @Cacheable(value = "dailyRates")
     public List<Valute> getDailyRates() {
 
         ValCurs valCursResponse = restClient
                 .get()
-                .uri("/XML_daily.asp/")
+                .uri(urlDaily)
                 .retrieve()
                 .onStatus(HttpStatusCode::is5xxServerError, (response, request) -> {
                     log.error("Error response: {}", response);
