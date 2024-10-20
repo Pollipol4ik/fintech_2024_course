@@ -126,9 +126,5 @@ public class ApiClient {
             log.info("Synchronous KudaGo API request to fetch events completed. Semaphore permits available: {}", semaphore.availablePermits());
         }
     }
-    public int getAvailablePermits() {
-        return semaphore.availablePermits();
-    }
-
 }
 
