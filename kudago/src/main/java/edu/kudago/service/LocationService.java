@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class LocationService {
-    private final InMemoryStorage<Location, String> storage ;
+    private final InMemoryStorage<Location, String> storage;
 
     public Iterable<Location> getAllLocations() {
         return storage.findAll();

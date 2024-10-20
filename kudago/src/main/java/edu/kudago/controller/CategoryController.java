@@ -2,7 +2,6 @@ package edu.kudago.controller;
 
 import edu.kudago.dto.Category;
 import edu.kudago.service.CategoryService;
-
 import edu.simplestarter.aspect.LogExecutionTime;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
