@@ -7,9 +7,11 @@ import edu.kudago.dto.Location;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
@@ -17,8 +19,11 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.wiremock.integrations.testcontainers.WireMockContainer;
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -32,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(locations = "classpath:application-test.properties")
 @Testcontainers
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ApiClientTest {
 
     @Container
@@ -69,20 +75,22 @@ public class ApiClientTest {
         String categoriesJson = "[{\"id\":1,\"slug\":\"art\",\"name\":\"Art\"},{\"id\":2,\"slug\":\"music\",\"name\":\"Music\"}]";
         stubForGetRequest(categoriesEndpoint, categoriesJson, 200);
 
-        List<Category> categories = apiClient.fetchCategories().collectList().block();
+        Flux<Category> categoryFlux = apiClient.fetchCategories();
 
-        assertThat(categories).hasSize(2);
-        assertThat(categories.get(0).name()).isEqualTo("Art");
-        assertThat(categories.get(1).name()).isEqualTo("Music");
+        StepVerifier.create(categoryFlux)
+                .expectNextMatches(category -> category.name().equals("Art"))
+                .expectNextMatches(category -> category.name().equals("Music"))
+                .verifyComplete();
     }
 
     @Test
     void testFetchCategoriesError() {
         stubForErrorResponse(categoriesEndpoint, 500);
 
-        assertThatThrownBy(() -> apiClient.fetchCategories().collectList().block())
-                .isInstanceOf(WebClientResponseException.class)
-                .hasMessageContaining("500 Internal Server Error");
+        StepVerifier.create(apiClient.fetchCategories())
+                .expectErrorMatches(throwable -> throwable instanceof WebClientResponseException &&
+                        ((WebClientResponseException) throwable).getRawStatusCode() == 500)
+                .verify();
     }
 
     @Test
@@ -90,20 +98,22 @@ public class ApiClientTest {
         String locationsJson = "[{\"slug\":\"moscow\",\"name\":\"Moscow\"},{\"slug\":\"spb\",\"name\":\"Saint Petersburg\"}]";
         stubForGetRequest(locationsEndpoint, locationsJson, 200);
 
-        List<Location> locations = apiClient.fetchLocations().collectList().block();
+        Flux<Location> locationFlux = apiClient.fetchLocations();
 
-        assertThat(locations).hasSize(2);
-        assertThat(locations.get(0).name()).isEqualTo("Moscow");
-        assertThat(locations.get(1).name()).isEqualTo("Saint Petersburg");
+        StepVerifier.create(locationFlux)
+                .expectNextMatches(location -> location.name().equals("Moscow"))
+                .expectNextMatches(location -> location.name().equals("Saint Petersburg"))
+                .verifyComplete();
     }
 
     @Test
     void testFetchLocationsError() {
         stubForErrorResponse(locationsEndpoint, 500);
 
-        assertThatThrownBy(() -> apiClient.fetchLocations().collectList().block())
-                .isInstanceOf(WebClientResponseException.class)
-                .hasMessageContaining("500 Internal Server Error");
+        StepVerifier.create(apiClient.fetchLocations())
+                .expectErrorMatches(throwable -> throwable instanceof WebClientResponseException &&
+                        ((WebClientResponseException) throwable).getRawStatusCode() == 500)
+                .verify();
     }
 
     @Test
@@ -117,11 +127,12 @@ public class ApiClientTest {
                 "] }";
         stubForGetEventsRequest(startDate, endDate, eventsJson, 200);
 
-        List<Event> events = apiClient.getEventsBetweenDates(startDate, endDate).collectList().block();
+        Flux<Event> eventFlux = apiClient.getEventsBetweenDates(startDate, endDate);
 
-        assertThat(events).hasSize(2);
-        assertThat(events.get(0).title()).isEqualTo("Event 1");
-        assertThat(events.get(1).title()).isEqualTo("Event 2");
+        StepVerifier.create(eventFlux)
+                .expectNextMatches(event -> event.title().equals("Event 1"))
+                .expectNextMatches(event -> event.title().equals("Event 2"))
+                .verifyComplete();
     }
 
     @Test
@@ -131,9 +142,10 @@ public class ApiClientTest {
 
         stubForGetEventsRequest(startDate, endDate, "", 500);
 
-        assertThatThrownBy(() -> apiClient.getEventsBetweenDates(startDate, endDate).collectList().block())
-                .isInstanceOf(WebClientResponseException.class)
-                .hasMessageContaining("500 Internal Server Error");
+        StepVerifier.create(apiClient.getEventsBetweenDates(startDate, endDate))
+                .expectErrorMatches(throwable -> throwable instanceof WebClientResponseException &&
+                        ((WebClientResponseException) throwable).getRawStatusCode() == 500)
+                .verify();
     }
 
     @Test
@@ -164,6 +176,26 @@ public class ApiClientTest {
         assertThatThrownBy(() -> apiClient.getEventsBetweenDatesSync(startDate, endDate))
                 .isInstanceOf(WebClientResponseException.InternalServerError.class)
                 .hasMessageContaining("500 Internal Server Error");
+    }
+
+    @Test
+    @Timeout(10)
+    void testRateLimiting() throws InterruptedException {
+        String categoriesJson = "[{\"id\":1,\"slug\":\"art\",\"name\":\"Art\"}]";
+        stubForGetRequest(categoriesEndpoint, categoriesJson, 200);
+
+        AtomicInteger counter = new AtomicInteger(0);
+
+        Flux<Category> categoryFlux = Flux.range(1, 10)
+                .flatMap(i -> apiClient.fetchCategories()
+                        .doOnNext(category -> counter.incrementAndGet())
+                );
+
+        StepVerifier.create(categoryFlux)
+                .expectNextCount(10)
+                .verifyComplete();
+
+        assertThat(counter.get()).isEqualTo(10);
     }
 
     private void stubForGetRequest(String endpoint, String responseJson, int status) {

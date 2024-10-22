@@ -2,6 +2,7 @@ package edu.kudago.service;
 
 import edu.kudago.client.ApiClient;
 import edu.kudago.dto.Event;
+import edu.kudago.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,10 +24,12 @@ import java.util.stream.Collectors;
 public class EventService {
 
     private final ApiClient apiClient;
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final double USD_RATE = 96.0;
+    private static final double EUR_RATE = 105.0;
 
     private String formatEpochSecond(long epochSecond) {
-        return LocalDateTime.ofEpochSecond(epochSecond, 0, ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now())).format(formatter);
+        return LocalDateTime.ofEpochSecond(epochSecond, 0, ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now())).format(FORMATTER);
     }
 
     private void logDateRange(long startDateTimestamp, long endDateTimestamp) {
@@ -38,19 +41,42 @@ public class EventService {
         LocalDate startDate = (dateFrom != null) ? dateFrom : LocalDate.now();
         LocalDate endDate = (dateTo != null) ? dateTo : startDate.plusDays(6);
 
-        CompletableFuture<Double> convertedBudgetFuture = CompletableFuture.supplyAsync(() -> convertCurrency(budget, currency));
+        CompletableFuture<Double> convertedBudgetFuture = CompletableFuture.supplyAsync(() -> convertCurrency(budget, currency))
+                .exceptionally(ex -> {
+                    log.error("Error converting currency: {}", ex.getMessage());
+                    return budget;
+                });
+
         CompletableFuture<List<Event>> eventsFuture = CompletableFuture.supplyAsync(() -> {
             long startDateTimestamp = toEpochSecond(startDate);
             long endDateTimestamp = toEpochSecond(endDate);
             logDateRange(startDateTimestamp, endDateTimestamp);
             return apiClient.getEventsBetweenDatesSync(startDateTimestamp, endDateTimestamp);
+        }).exceptionally(ex -> {
+            log.error("Error fetching events: {}", ex.getMessage());
+            return List.of();
         });
 
-        return eventsFuture.thenCombine(convertedBudgetFuture, (events, convertedBudget) ->
-                events.stream()
-                        .filter(event -> isValidPrice(event.price(), convertedBudget, event.isFree()))
-                        .collect(Collectors.toList())
-        );
+        return eventsFuture.thenCombine(convertedBudgetFuture, (events, convertedBudget) -> {
+            if (events.isEmpty()) {
+                log.warn("No events found for the given budget and date range.");
+                throw new ResourceNotFoundException("No events found for the given budget and date range.");
+            }
+
+            List<Event> filteredEvents = events.stream()
+                    .filter(event -> isValidPrice(event.price(), convertedBudget, event.isFree()))
+                    .collect(Collectors.toList());
+
+            if (filteredEvents.isEmpty()) {
+                log.warn("No events fit within the given budget.");
+                throw new ResourceNotFoundException("No events fit within the given budget.");
+            }
+
+            return filteredEvents;
+        }).exceptionally(ex -> {
+            log.error("Error while processing the request: {}", ex.getMessage(), ex);
+            throw new RuntimeException(ex);
+        });
     }
 
 
@@ -66,17 +92,39 @@ public class EventService {
         return Mono.zip(
                 apiClient.getEventsBetweenDates(startDateTimestamp, endDateTimestamp).collectList(),
                 convertCurrencyAsync(budget, currency)
-        ).map(tuple -> {
+        ).flatMap(tuple -> {
             List<Event> events = tuple.getT1();
             double convertedBudget = tuple.getT2();
-            return events.stream()
+
+            if (events.isEmpty()) {
+                log.warn("No events found for the given budget and date range.");
+                return Mono.error(new ResourceNotFoundException("No events found for the given budget and date range."));
+            }
+
+            List<Event> filteredEvents = events.stream()
                     .filter(event -> isValidPrice(event.price(), convertedBudget, event.isFree()))
                     .collect(Collectors.toList());
+
+            if (filteredEvents.isEmpty()) {
+                log.warn("No events fit within the given budget.");
+                return Mono.error(new ResourceNotFoundException("No events fit within the given budget."));
+            }
+
+            return Mono.just(filteredEvents);
+        }).onErrorResume(ex -> {
+            log.error("Error while processing the request: {}", ex.getMessage(), ex);
+            return Mono.error(new RuntimeException(ex));
         });
     }
 
 
-    private boolean isValidPrice(String price, double budget, boolean isFree) {
+    private void validateDateRange(LocalDate dateFrom, LocalDate dateTo) {
+        if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) {
+            throw new IllegalArgumentException("dateFrom cannot be after dateTo");
+        }
+    }
+
+    public boolean isValidPrice(String price, double budget, boolean isFree) {
         if (isFree) {
             log.info("Event is free, accepting.");
             return true;
@@ -98,7 +146,6 @@ public class EventService {
         }
     }
 
-
     private double extractFirstPrice(String price) {
         String regex = "\\d+";
         Pattern pattern = Pattern.compile(regex);
@@ -111,21 +158,13 @@ public class EventService {
         }
     }
 
-
     private double convertCurrency(double budget, String currency) {
         return switch (currency.toUpperCase()) {
-            case "USD" -> budget * 96.0;
-            case "EUR" -> budget * 105.0;
+            case "USD" -> budget * USD_RATE;
+            case "EUR" -> budget * EUR_RATE;
             default -> budget;
         };
     }
-
-    private void validateDateRange(LocalDate dateFrom, LocalDate dateTo) {
-        if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) {
-            throw new IllegalArgumentException("dateFrom cannot be after dateTo");
-        }
-    }
-
 
     private Mono<Double> convertCurrencyAsync(double budget, String currency) {
         return Mono.fromCallable(() -> convertCurrency(budget, currency));

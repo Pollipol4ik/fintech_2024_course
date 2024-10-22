@@ -25,6 +25,14 @@ public class ApiClient {
     @Value("${api.max-concurrent-requests}")
     private int maxConcurrentRequests;
 
+    @Value("${kudago.events-endpoint}")
+    private String eventEndpoint;
+
+    @Value("${kudago.categories-endpoint}")
+    private String categoryEndpoint;
+
+    @Value("${kudago.locations-endpoint}")
+    private String locationEndpoint;
     private Semaphore semaphore;
 
     @PostConstruct
@@ -39,7 +47,7 @@ public class ApiClient {
                 log.info("KudaGo API request to fetch categories started");
                 return webClient
                         .get()
-                        .uri("/place-categories/")
+                        .uri(categoryEndpoint)
                         .retrieve()
                         .bodyToFlux(Category.class)
                         .doFinally(signalType -> {
@@ -60,11 +68,11 @@ public class ApiClient {
                 log.info("KudaGo API request to fetch locations started");
                 return webClient
                         .get()
-                        .uri("/locations/")
+                        .uri(locationEndpoint)
                         .retrieve()
                         .bodyToFlux(Location.class)
                         .doFinally(signalType -> {
-                            semaphore.release(); // Release semaphore slot
+                            semaphore.release();
                             log.info("KudaGo API request to fetch locations completed");
                         });
             } catch (InterruptedException e) {
@@ -82,7 +90,7 @@ public class ApiClient {
                 return webClient
                         .get()
                         .uri(uriBuilder -> uriBuilder
-                                .path("/events/")
+                                .path(eventEndpoint)
                                 .queryParam("actual_since", startDateTimestamp)
                                 .queryParam("actual_until", endDateTimestamp)
                                 .queryParam("fields", "id,title,price")
@@ -108,7 +116,7 @@ public class ApiClient {
             return webClient
                     .get()
                     .uri(uriBuilder -> uriBuilder
-                            .path("/events/")
+                            .path(eventEndpoint)
                             .queryParam("actual_since", startDateTimestamp)
                             .queryParam("actual_until", endDateTimestamp)
                             .queryParam("fields", "id,title,price")

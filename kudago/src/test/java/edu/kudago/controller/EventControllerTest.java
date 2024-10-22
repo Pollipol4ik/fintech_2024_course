@@ -1,6 +1,7 @@
 package edu.kudago.controller;
 
 import edu.kudago.dto.Event;
+import edu.kudago.dto.EventRequestDto;
 import edu.kudago.service.EventService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,9 +14,9 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
 
@@ -40,18 +41,15 @@ public class EventControllerTest {
     @Test
     void testGetEventsByBudgetReactor_Success() {
         List<Event> events = List.of(event1, event2);
-        Mockito.when(eventService.getEventsByBudgetAsync(anyDouble(), anyString(), Mockito.any(LocalDate.class), Mockito.any(LocalDate.class)))
+        Mockito.when(eventService.getEventsByBudgetAsync(anyDouble(), anyString(), any(LocalDate.class), any(LocalDate.class)))
                 .thenReturn(Mono.just(events));
 
-        webTestClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/events")
-                        .queryParam("budget", 100.0)
-                        .queryParam("currency", "USD")
-                        .queryParam("dateFrom", "2024-01-01")
-                        .queryParam("dateTo", "2024-01-10")
-                        .build())
-                .accept(MediaType.APPLICATION_JSON)
+        EventRequestDto requestDto = new EventRequestDto(100.0, "USD", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 10));
+
+        webTestClient.post()
+                .uri("/api/v1/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestDto)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(Event.class)
@@ -59,94 +57,66 @@ public class EventControllerTest {
                 .contains(event1, event2);
     }
 
-    @Test
-    void testGetEventsByBudgetReactor_NoEventsFound() {
-        Mockito.when(eventService.getEventsByBudgetAsync(anyDouble(), anyString(), Mockito.any(LocalDate.class), Mockito.any(LocalDate.class)))
-                .thenReturn(Mono.just(Collections.emptyList()));
-
-        webTestClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/events")
-                        .queryParam("budget", 100.0)
-                        .queryParam("currency", "USD")
-                        .queryParam("dateFrom", "2024-01-01")
-                        .queryParam("dateTo", "2024-01-10")
-                        .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isNotFound();
-    }
 
     @Test
     void testGetEventsByBudgetReactor_InvalidBudget_ShouldReturnBadRequest() {
-        webTestClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/events")
-                        .queryParam("budget", "invalid")
-                        .queryParam("currency", "USD")
-                        .build())
+        EventRequestDto requestDto = new EventRequestDto(Double.NaN, "USD", LocalDate.now(), LocalDate.now().plusDays(1));
+
+        webTestClient.post()
+                .uri("/api/v1/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestDto)
                 .exchange()
                 .expectStatus().isBadRequest();
     }
 
     @Test
     void testGetEventsByBudgetReactor_MissingCurrency_ShouldReturnBadRequest() {
-        webTestClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/events")
-                        .queryParam("budget", 100.0)
-                        .build())
+        EventRequestDto requestDto = new EventRequestDto(100.0, null, LocalDate.now(), LocalDate.now().plusDays(1));
+
+        webTestClient.post()
+                .uri("/api/v1/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestDto)
                 .exchange()
                 .expectStatus().isBadRequest();
     }
 
     @Test
     void testGetEventsByBudgetReactor_MissingBudget_ShouldReturnBadRequest() {
-        webTestClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/events")
-                        .queryParam("currency", "USD")
-                        .build())
-                .exchange()
-                .expectStatus().isBadRequest();
-    }
+        EventRequestDto requestDto = new EventRequestDto(null, "USD", LocalDate.now(), LocalDate.now().plusDays(1));
 
-    @Test
-    void testGetEventsByBudgetReactor_EmptyQueryParams_ShouldReturnBadRequest() {
-        webTestClient.get()
+        webTestClient.post()
                 .uri("/api/v1/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestDto)
                 .exchange()
                 .expectStatus().isBadRequest();
     }
 
     @Test
-    void testGetEventsByBudgetReactor_InvalidDateFormat_ShouldReturnBadRequest() {
-        webTestClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/events")
-                        .queryParam("budget", 100.0)
-                        .queryParam("currency", "USD")
-                        .queryParam("dateFrom", "invalid-date")
-                        .build())
+    void testGetEventsByBudgetReactor_EmptyRequest_ShouldReturnBadRequest() {
+        webTestClient.post()
+                .uri("/api/v1/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{}")
                 .exchange()
                 .expectStatus().isBadRequest();
     }
+
 
     @Test
     void testGetEventsByBudgetReactor_ValidParamsWithFutureDates() {
         List<Event> events = List.of(event1, event2);
-        Mockito.when(eventService.getEventsByBudgetAsync(anyDouble(), anyString(), Mockito.any(LocalDate.class), Mockito.any(LocalDate.class)))
+        Mockito.when(eventService.getEventsByBudgetAsync(anyDouble(), anyString(), any(LocalDate.class), any(LocalDate.class)))
                 .thenReturn(Mono.just(events));
 
-        webTestClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/events")
-                        .queryParam("budget", 100.0)
-                        .queryParam("currency", "USD")
-                        .queryParam("dateFrom", LocalDate.now().plusDays(1).toString())
-                        .queryParam("dateTo", LocalDate.now().plusDays(10).toString())
-                        .build())
-                .accept(MediaType.APPLICATION_JSON)
+        EventRequestDto requestDto = new EventRequestDto(100.0, "USD", LocalDate.now().plusDays(1), LocalDate.now().plusDays(10));
+
+        webTestClient.post()
+                .uri("/api/v1/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestDto)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(Event.class)
