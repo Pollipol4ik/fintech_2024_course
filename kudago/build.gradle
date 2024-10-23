@@ -21,6 +21,7 @@ repositories {
 
 dependencies {
     implementation(project(':simple-starter'))
+    implementation(project(':cbr'))
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-aop'
