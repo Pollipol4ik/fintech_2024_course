@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 @RestControllerAdvice
-public class CustomExceptionHandler {
+public class CustExceptionHandler {
 
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<SuccessResponseDto> baseExceptionHandler(BaseException ex) {
