@@ -14,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 
+
 import java.util.List;
 import java.util.Optional;
 
@@ -48,7 +49,6 @@ public class LocationServiceTest extends IntegrationEnvironment {
         // Assert
         assertThat(createdLocation).isNotNull();
         assertThat(createdLocation.getName()).isEqualTo(locationDto.name());
-        assertThat(createdLocation.getSlug()).isEqualTo(locationDto.slug());
     }
 
     @Test
@@ -57,11 +57,11 @@ public class LocationServiceTest extends IntegrationEnvironment {
     public void getAllLocations_shouldReturnAllLocations() {
         // Arrange
         LocationEntity loc1 = new LocationEntity();
-        loc1.setSlug("location-1");
+        loc1.setId(1L);
         loc1.setName("Location 1");
 
         LocationEntity loc2 = new LocationEntity();
-        loc2.setSlug("location-2");
+        loc2.setId(2L);
         loc2.setName("Location 2");
 
         Mockito.when(locationRepository.findAll()).thenReturn(List.of(loc1, loc2));
@@ -77,16 +77,16 @@ public class LocationServiceTest extends IntegrationEnvironment {
     @Test
     @Transactional
     @Rollback
-    public void getLocationBySlug_shouldReturnLocation_whenLocationExists() {
+    public void getLocationById_shouldReturnLocation_whenLocationExists() {
         // Arrange
         LocationEntity location = new LocationEntity();
-        location.setSlug("test-location");
+        location.setId(1L);
         location.setName("Test Location");
 
-        Mockito.when(locationRepository.findBySlug("test-location")).thenReturn(Optional.of(location));
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
 
         // Act
-        LocationEntity foundLocation = locationService.getLocationBySlug("test-location");
+        LocationEntity foundLocation = locationService.getLocationById(1L);
 
         // Assert
         assertThat(foundLocation).isEqualTo(location);
@@ -95,14 +95,14 @@ public class LocationServiceTest extends IntegrationEnvironment {
     @Test
     @Transactional
     @Rollback
-    public void getLocationBySlug_shouldThrowResourceNotFoundException_whenLocationDoesNotExist() {
+    public void getLocationById_shouldThrowResourceNotFoundException_whenLocationDoesNotExist() {
         // Arrange
-        Mockito.when(locationRepository.findBySlug("non-existent-slug")).thenReturn(Optional.empty());
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Expected
-        assertThatThrownBy(() -> locationService.getLocationBySlug("non-existent-slug"))
+        assertThatThrownBy(() -> locationService.getLocationById(1L))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Location not found with slug: non-existent-slug");
+                .hasMessageContaining("Location not found with id: 1");
     }
 
     @Test
@@ -111,20 +111,19 @@ public class LocationServiceTest extends IntegrationEnvironment {
     public void updateLocation_shouldUpdateLocation_whenValidDtoProvided() {
         // Arrange
         LocationEntity existingLocation = new LocationEntity();
-        existingLocation.setSlug("test-location");
+        existingLocation.setId(1L);
         existingLocation.setName("Old Location");
 
         Location locationDto = new Location("Updated Location", "updated-location");
 
-        Mockito.when(locationRepository.findBySlug("test-location")).thenReturn(Optional.of(existingLocation));
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(existingLocation));
         Mockito.when(locationRepository.save(existingLocation)).thenReturn(existingLocation);
 
         // Act
-        LocationEntity updatedLocation = locationService.updateLocation("test-location", locationDto);
+        LocationEntity updatedLocation = locationService.updateLocation(1L, locationDto);
 
         // Assert
         assertThat(updatedLocation.getName()).isEqualTo(locationDto.name());
-        assertThat(updatedLocation.getSlug()).isEqualTo(locationDto.slug());
     }
 
     @Test
@@ -133,12 +132,12 @@ public class LocationServiceTest extends IntegrationEnvironment {
     public void updateLocation_shouldThrowResourceNotFoundException_whenLocationDoesNotExist() {
         // Arrange
         Location locationDto = new Location("Updated Location", "updated-location");
-        Mockito.when(locationRepository.findBySlug("non-existent-slug")).thenReturn(Optional.empty());
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Expected
-        assertThatThrownBy(() -> locationService.updateLocation("non-existent-slug", locationDto))
+        assertThatThrownBy(() -> locationService.updateLocation(1L, locationDto))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Location not found with slug: non-existent-slug");
+                .hasMessageContaining("Location not found with id: 1");
     }
 
     @Test
@@ -147,12 +146,12 @@ public class LocationServiceTest extends IntegrationEnvironment {
     public void deleteLocation_shouldRemoveLocation_whenLocationExists() {
         // Arrange
         LocationEntity location = new LocationEntity();
-        location.setSlug("test-location");
+        location.setId(1L);
 
-        Mockito.when(locationRepository.findBySlug("test-location")).thenReturn(Optional.of(location));
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
 
         // Act
-        locationService.deleteLocation("test-location");
+        locationService.deleteLocation(1L);
 
         // Assert
         Mockito.verify(locationRepository).delete(location);
@@ -163,11 +162,11 @@ public class LocationServiceTest extends IntegrationEnvironment {
     @Rollback
     public void deleteLocation_shouldThrowResourceNotFoundException_whenLocationDoesNotExist() {
         // Arrange
-        Mockito.when(locationRepository.findBySlug("non-existent-slug")).thenReturn(Optional.empty());
+        Mockito.when(locationRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Expected
-        assertThatThrownBy(() -> locationService.deleteLocation("non-existent-slug"))
+        assertThatThrownBy(() -> locationService.deleteLocation(1L))
                 .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Location not found with slug: non-existent-slug");
+                .hasMessageContaining("Location not found with id: 1");
     }
 }
