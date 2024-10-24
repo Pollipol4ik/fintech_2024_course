@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: kudago
+
+  liquibase:
+    enabled: false
+  datasource:
+    url: jdbc:postgresql://localhost:15432/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+
+server:
+  servlet:
+    encoding:
+      force-request: true
+      force-response: true
+      charset: UTF-8
+
+api:
+  base-url: https://kudago.com/public-api/v1.4

@@ -2,37 +2,53 @@ package edu.kudago.service;
 
 import edu.kudago.dto.Location;
 import edu.kudago.exceptions.ResourceNotFoundException;
-import edu.kudago.storage.InMemoryStorage;
+import edu.kudago.repository.LocationRepository;
+import edu.kudago.repository.entity.LocationEntity;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
+@RequiredArgsConstructor
 public class LocationService {
-    private final InMemoryStorage<Location, String> storage = new InMemoryStorage<>();
 
-    public Iterable<Location> getAllLocations() {
-        return storage.findAll();
+    private final LocationRepository locationRepository;
+
+    @Transactional
+    public LocationEntity createLocation(Location locationDto) {
+        LocationEntity location = new LocationEntity();
+        location.setName(locationDto.name());
+        location.setSlug(locationDto.slug());
+        return locationRepository.save(location);
     }
 
-    public Location getLocationBySlug(String slug) {
-        return storage.findById(slug)
-                .orElseThrow(() -> new ResourceNotFoundException("Location not found with slug: " + slug));
+    public List<LocationEntity> getAllLocations() {
+        return locationRepository.findAll();
     }
 
-    public Location createLocation(Location location) {
-        return storage.save(location.slug(), location);
+    public LocationEntity getLocationById(Long id) {
+        return locationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Location not found with id: " + id));
     }
 
-    public Location updateLocation(String slug, Location location) {
-        if (!storage.existsById(slug)) {
-            throw new ResourceNotFoundException("Location not found with slug: " + slug);
-        }
-        return storage.save(slug, location);
+    public LocationEntity getLocationByIdWithEvents(Long id) {
+        return locationRepository.findByIdWithEvents(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Location not found with id: " + id));
     }
 
-    public void deleteLocation(String slug) {
-        if (!storage.existsById(slug)) {
-            throw new ResourceNotFoundException("Location not found with slug: " + slug);
-        }
-        storage.deleteById(slug);
+    @Transactional
+    public LocationEntity updateLocation(Long id, Location locationDto) {
+        LocationEntity location = getLocationById(id);
+        location.setName(locationDto.name());
+        location.setSlug(locationDto.slug());
+        return locationRepository.save(location);
+    }
+
+    @Transactional
+    public void deleteLocation(Long id) {
+        LocationEntity location = getLocationById(id);
+        locationRepository.delete(location);
     }
 }
