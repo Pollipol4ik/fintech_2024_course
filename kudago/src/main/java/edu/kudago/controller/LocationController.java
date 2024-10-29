@@ -2,7 +2,6 @@ package edu.kudago.controller;
 
 import edu.kudago.dto.Location;
 import edu.kudago.service.LocationService;
-
 import edu.simplestarter.aspect.LogExecutionTime;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
