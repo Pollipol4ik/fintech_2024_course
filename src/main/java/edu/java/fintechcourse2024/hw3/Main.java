@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 public class Main {
     public static void main(String[] args) {
         CustomLinkedList<Integer> list = new CustomLinkedList<>();
-
         list.add(1);
         list.add(2);
         list.add(3);
@@ -17,21 +16,17 @@ public class Main {
 
         System.out.println("Элемент на индексе 1: " + list.get(1));
 
-
         list.remove(1);
         System.out.print("Список после удаления элемента с индекса 1: ");
         list.printList();
 
-
         System.out.println("Список содержит 2: " + list.contains(2));
         System.out.println("Список содержит 3: " + list.contains(3));
-
 
         List<Integer> newElements = Arrays.asList(4, 5, 6);
         list.addAll(newElements);
         System.out.print("Список после добавления всех элементов из другого списка: ");
         list.printList();
-
 
         list.insert(7, 0);
         System.out.print("Список после вставки 7 в начало: ");
@@ -45,9 +40,7 @@ public class Main {
         System.out.print("Список после вставки 9 в конец: ");
         list.printList();
 
-
         Stream<Integer> elementStream = Stream.of(1, 2, 3);
-
         CustomLinkedList<Integer> customList = elementStream.reduce(
                 new CustomLinkedList<>(),
                 (list1, element) -> {
@@ -64,29 +57,27 @@ public class Main {
                 }
         );
 
-        System.out.print("Проверка корректной работы customList");
+        System.out.print("Проверка корректной работы customList: ");
         customList.add(4);
         customList.add(5);
-        System.out.print("Список после добавления элементов: ");
         customList.printList();
 
-        System.out.println("Элемент на индексе 1: " + customList.get(1));
+        System.out.print("Обход customList с использованием итератора: ");
+        CustomIterator<Integer> iterator = customList.iterator();
+        while (iterator.hasNext()) {
+            System.out.print(iterator.next() + " ");
+        }
+        System.out.println();
 
-
-        customList.remove(1);
-        System.out.print("Список после удаления элемента с индекса 1: ");
-        customList.printList();
-
-
-        System.out.println("Список содержит 2: " + customList.contains(2));
-        System.out.println("Список содержит 3: " + customList.contains(3));
-
+        System.out.print("Обход customList с использованием forEachRemaining: ");
+        iterator = customList.iterator();
+        iterator.forEachRemaining(element -> System.out.print(element + " "));
+        System.out.println();
 
         List<Integer> newElementsCustom = Arrays.asList(6, 7, 8);
         customList.addAll(newElementsCustom);
         System.out.print("Список после добавления всех элементов из другого списка: ");
         customList.printList();
-
 
         customList.insert(9, 0);
         System.out.print("Список после вставки 9 в начало: ");
@@ -99,7 +90,6 @@ public class Main {
         customList.insert(11, customList.getSize());
         System.out.print("Список после вставки 11 в конец: ");
         customList.printList();
-
 
         System.out.print("Список после преобразования стрима: ");
         customList.printList();

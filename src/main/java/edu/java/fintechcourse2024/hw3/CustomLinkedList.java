@@ -133,4 +133,8 @@ public class CustomLinkedList<T> {
         System.out.println();
     }
 
+    public CustomIterator<T> iterator() {
+        return new CustomIterator<>(first);
+    }
+
 }
