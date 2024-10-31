@@ -1,4 +1,4 @@
-package edu.kudago.îbserver;
+package edu.kudago.observer;
 
 import edu.kudago.dto.Category;
 import edu.kudago.memento.CategoryHistoryService;

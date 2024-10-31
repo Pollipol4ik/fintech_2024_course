@@ -1,4 +1,4 @@
-package edu.kudago.îbserver;
+package edu.kudago.observer;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package edu.kudago.îbserver;
+package edu.kudago.observer;
 
 import edu.kudago.dto.Location;
 import edu.kudago.memento.LocationHistoryService;

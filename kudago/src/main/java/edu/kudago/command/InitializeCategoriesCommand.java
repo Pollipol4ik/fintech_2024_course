@@ -2,7 +2,7 @@ package edu.kudago.command;
 
 import edu.kudago.client.ApiClient;
 import edu.kudago.dto.Category;
-import edu.kudago.îbserver.Observer;
+import edu.kudago.observer.Observer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

@@ -1,8 +1,8 @@
 package edu.kudago.storage;
 
 
-import edu.kudago.îbserver.Observable;
-import edu.kudago.îbserver.Observer;
+import edu.kudago.observer.Observable;
+import edu.kudago.observer.Observer;
 
 import java.util.ArrayList;
 import java.util.List;
