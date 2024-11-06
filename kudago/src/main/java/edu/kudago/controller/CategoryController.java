@@ -1,6 +1,7 @@
 package edu.kudago.controller;
 
 import edu.kudago.dto.Category;
+import edu.kudago.memento.CategoryMemento;
 import edu.kudago.service.CategoryService;
 import edu.simplestarter.aspect.LogExecutionTime;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +17,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -64,5 +68,23 @@ public class CategoryController {
     public ResponseEntity<Void> deleteCategory(@PathVariable Integer id) {
         categoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Get last category snapshot")
+    @GetMapping("/last-snapshot")
+    public ResponseEntity<CategoryMemento> getLastCategorySnapshot() {
+        return ResponseEntity.of(Optional.ofNullable(categoryService.getLastCategorySnapshot()));
+    }
+
+    @Operation(summary = "Get previous category snapshot")
+    @GetMapping("/previous-snapshot")
+    public ResponseEntity<CategoryMemento> getPreviousCategorySnapshot() {
+        return ResponseEntity.of(Optional.ofNullable(categoryService.getPreviousCategorySnapshot()));
+    }
+
+    @Operation(summary = "Get history of category snapshots")
+    @GetMapping("/history-snapshot")
+    public ResponseEntity<List<CategoryMemento>> getHistoryCategorySnapshot() {
+        return ResponseEntity.ok(categoryService.getHistoryOfSnapshots());
     }
 }

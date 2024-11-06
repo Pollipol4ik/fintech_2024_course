@@ -1,6 +1,7 @@
 package edu.kudago.controller;
 
 import edu.kudago.dto.Location;
+import edu.kudago.memento.LocationMemento;
 import edu.kudago.service.LocationService;
 import edu.simplestarter.aspect.LogExecutionTime;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +17,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -64,5 +68,23 @@ public class LocationController {
     public ResponseEntity<Void> deleteLocation(@PathVariable String slug) {
         locationService.deleteLocation(slug);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Get last location snapshot")
+    @GetMapping("/last-snapshot")
+    public ResponseEntity<LocationMemento> getLastLocationSnapshot() {
+        return ResponseEntity.of(Optional.ofNullable(locationService.getLastLocationSnapshot()));
+    }
+
+    @Operation(summary = "Get previous location snapshot")
+    @GetMapping("/previous-snapshot")
+    public ResponseEntity<LocationMemento> getPreviousLocationSnapshot() {
+        return ResponseEntity.of(Optional.ofNullable(locationService.getPreviousLocationSnapshot()));
+    }
+
+    @Operation(summary = "Get history of location snapshots")
+    @GetMapping("/history-snapshot")
+    public ResponseEntity<List<LocationMemento>> getHistoryLocationSnapshot() {
+        return ResponseEntity.ok(locationService.getHistoryOfSnapshots());
     }
 }

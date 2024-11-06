@@ -2,16 +2,19 @@ package edu.kudago.service;
 
 import edu.kudago.dto.Category;
 import edu.kudago.exceptions.ResourceNotFoundException;
-import edu.kudago.memento.CategoryHistoryService;
+import edu.kudago.memento.CategoryMemento;
+import edu.kudago.memento.HistoryService;
 import edu.kudago.storage.InMemoryStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
     private final InMemoryStorage<Category, Integer> storage = new InMemoryStorage<>();
-    private final CategoryHistoryService historyService;
+    private final HistoryService<Category, CategoryMemento> historyService;
 
     public Iterable<Category> getAllCategories() {
         return storage.findAll();
@@ -42,5 +45,17 @@ public class CategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
         historyService.saveMemento(category);
         storage.deleteById(id);
+    }
+
+    public CategoryMemento getLastCategorySnapshot() {
+        return historyService.getLastMemento();
+    }
+
+    public CategoryMemento getPreviousCategorySnapshot() {
+        return historyService.getPreviousMemento();
+    }
+
+    public List<CategoryMemento> getHistoryOfSnapshots() {
+        return historyService.getHistory();
     }
 }
