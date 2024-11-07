@@ -7,5 +7,6 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd
        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <include file="2024.10/10_23-create-table-places-locations.sql"/>
+    <include file="./2024/10/10_23-create-table-places-locations.sql"/>
+    <include file="./2024/11/11_06-create-table-user-role.sql"/>
 </databaseChangeLog>

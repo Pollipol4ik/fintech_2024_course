@@ -3,11 +3,17 @@ package edu.kudago.initializer;
 import edu.kudago.client.ApiClient;
 import edu.kudago.dto.Category;
 import edu.kudago.dto.Location;
+import edu.kudago.model.Role;
+import edu.kudago.repository.entity.RoleEntity;
+import edu.kudago.repository.entity.UserEntity;
+import edu.kudago.service.AuthService;
 import edu.kudago.service.CategoryService;
 import edu.kudago.service.LocationService;
+import edu.kudago.service.RoleService;
 import edu.simplestarter.aspect.LogExecutionTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +29,18 @@ public class DataInitializer implements CommandLineRunner {
     private final LocationService locationService;
     private final ApiClient apiClient;
 
+    private final AuthService authService;
+    private final RoleService roleService;
+
+    @Value("${admin-data.email}")
+    private String adminEmail;
+
+    @Value("${admin-data.password}")
+    private String password;
+
+    @Value("${admin-data.nickname}")
+    private String nickname;
+
     @Override
     public void run(String... args) throws Exception {
         log.info("Starting data initialization...");
@@ -31,6 +49,9 @@ public class DataInitializer implements CommandLineRunner {
         initializeLocations();
 
         log.info("Data initialization completed.");
+
+        insertRoles();
+        registerAdmin();
     }
 
     private void initializeCategories() {
@@ -69,5 +90,27 @@ public class DataInitializer implements CommandLineRunner {
         } catch (Exception e) {
             log.error("Error initializing locations", e);
         }
+    }
+
+    private void insertRoles() {
+        Role[] roles = Role.values();
+        for (Role role : roles) {
+            if (!roleService.roleExists(role)) {
+                RoleEntity roleEntity = new RoleEntity(null, role, null);
+                roleService.save(roleEntity);
+            }
+        }
+    }
+
+
+    private void registerAdmin() {
+        authService.registerAdmin(
+                new UserEntity(null,
+                        adminEmail,
+                        password,
+                        nickname,
+                        null,
+                        null,
+                        roleService.getRoleByName(Role.ROLE_ADMIN)));
     }
 }

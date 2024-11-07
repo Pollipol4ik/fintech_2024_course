@@ -23,3 +23,14 @@ server:
 
 api:
   base-url: https://kudago.com/public-api/v1.4
+
+
+jwt-token:
+  secret: 77397A24432646294A404E635266556A586E3272357538782F4125442A472D4B
+  issuer: polina
+cors:
+  allowed-origin: http://localhost:3000
+admin-data:
+  email: admin@admin.ru
+  nickname: admin
+  password: admin
