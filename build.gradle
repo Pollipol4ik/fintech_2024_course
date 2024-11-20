@@ -9,6 +9,7 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'jacoco'
 }
 
 repositories {
@@ -48,6 +49,26 @@ publishing {
         maven(MavenPublication) {
             from(components.java)
         }
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.10"
+}
+
+
+jacocoTestReport {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+}
+
+test {
+    finalizedBy jacocoTestReport
+    jacoco {
+        excludes = ['**/dto/**']
     }
 }
 
