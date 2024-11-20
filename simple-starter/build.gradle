@@ -13,14 +13,6 @@ java {
 	}
 }
 
-java {
-	withJavadocJar()
-	withSourcesJar()
-}
-
-jar {
-	enabled = true
-}
 repositories {
 	mavenCentral()
 }
